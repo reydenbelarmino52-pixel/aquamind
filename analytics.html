@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaMinds - Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-leaf"></i>
+                <h2>AquaMinds</h2>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="overview.html"><i class="fa-solid fa-house"></i> Overview</a></li>
+                    <li class="active"><a href="analytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a></li>
+                    <li><a href="notification.html"><i class="fa-regular fa-bell"></i> Notification</a></li>
+                    <li><a href="profile.html"><i class="fa-solid fa-user"></i> Profile</a></li>
+                </ul>
+            </nav>
+            <div class="status-indicator">
+                <span id="connection-status" class="status-online"></span> System Online
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button id="menu-toggle" class="menu-btn"><i class="fa-solid fa-bars"></i></button>
+                    <div class="header-title">
+                        <h1>Analytics</h1>
+                        <p id="current-date">Loading date...</p>
+                    </div>
+                </div>
+
+                <div class="history-controls">
+                    <input type="date" id="history-picker" class="date-input">
+                    <button id="btn-load-history" class="action-btn"><i class="fa-solid fa-clock-rotate-left"></i> View History</button>
+                </div>
+
+                <div class="header-actions">
+                    <button id="theme-toggle" class="icon-btn" title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
+                    <div class="user-profile"><i class="fa-solid fa-circle-user"></i><span>Admin</span></div>
+                </div>
+            </header>
+
+            <section class="analytics-grid">
+                <div class="water-column">
+                    <div id="water-card" class="water-card good">
+                        <div class="water-header">WATER LEVEL</div>
+                        <div class="liquid-container">
+                            <div class="wave wave1"></div><div class="wave wave2"></div><div class="wave wave3"></div>
+                        </div>
+                        <div class="water-info">
+                            <h2 id="water-level">--%</h2>
+                            <h3 id="water-status-text">GOOD</h3>
+                        </div>
+                    </div>
+                    <div class="tds-card" style="margin-top: 20px; text-align: center; background: var(--card-bg); padding: 15px; border-radius: 15px; box-shadow: var(--panel-shadow);">
+                        <h4>TDS (ppm)</h4>
+                        <h2 id="tds-value">--</h2>
+                    </div>
+                </div>
+
+                <div class="panel" style="text-align: center;">
+                    <div class="card-header" style="justify-content: center;">BIOFILTER</div>
+                    <h2 id="bio-temp">-- °C</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary);">Temperature</p>
+                    <hr style="margin: 10px 0; border-color: var(--border-color);">
+                    <h2 id="bio-ph">--</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary);">pH Level</p>
+                </div>
+
+                <div class="panel" style="text-align: center;">
+                    <div class="card-header" style="justify-content: center;">TILAPIA</div>
+                    <h2 id="tilapia-temp">-- °C</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary);">Temperature</p>
+                    <hr style="margin: 10px 0; border-color: var(--border-color);">
+                    <h2 id="tilapia-ph">--</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary);">pH Level</p>
+                </div>
+            </section>
+
+            <section class="panel chart-panel">
+                <div class="panel-header"><h3>Temperature History (Live)</h3></div>
+                <div class="chart-container" style="height: 300px; width: 100%;"><canvas id="tempChart"></canvas></div>
+            </section>
+
+            <section class="controls-layout">
+                <div class="panel" style="flex: 1; min-width: 300px;">
+                    <div class="panel-header"><h3>Manual Controls</h3></div>
+                    <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary);">Hardware Overrides</p>
+
+                    <div class="control-item">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <i class="fa-solid fa-fan" style="color: var(--accent-color);"></i>
+                            <span>Main Pump (12V)</span>
+                        </div>
+                        <label class="switch"><input type="checkbox" id="pump-12v-toggle"><span class="slider round"></span></label>
+                    </div>
+
+                    <div class="control-item">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <i class="fa-solid fa-water" style="color: var(--water-blue);"></i>
+                            <span>Aux Pump (5V)</span>
+                        </div>
+                        <label class="switch"><input type="checkbox" id="pump-5v-toggle"><span class="slider round"></span></label>
+                    </div>
+
+                    <div class="control-item">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <i class="fa-regular fa-lightbulb" style="color: var(--warning);"></i>
+                            <span>Grow Lights</span>
+                        </div>
+                        <label class="switch"><input type="checkbox" id="light-toggle"><span class="slider round"></span></label>
+                    </div>
+
+                    <div class="control-item" style="border-bottom: none; padding-bottom: 0;">
+                        <button id="btn-feed-now" class="action-btn" style="width: 100%; background: #E94560; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-cookie-bite"></i> Feed Fish (Servo)
+                        </button>
+                    </div>
+                </div>
+
+                <div style="flex: 1.5; min-width: 300px;">
+                    <div id="recommendation-card" class="recommendation-card optimal">
+                        <div class="rec-header">
+                            <i class="fa-solid fa-robot"></i>
+                            <h4>AI Recommendations</h4>
+                        </div>
+                        <ul class="rec-list" id="rec-list">
+                            <li><i class="fa-solid fa-spinner fa-spin"></i> <span>Analyzing system data...</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

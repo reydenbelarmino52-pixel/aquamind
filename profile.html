@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaMinds - Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-leaf"></i>
+                <h2>AquaMinds</h2>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="overview.html"><i class="fa-solid fa-house"></i> Overview</a></li>
+                    <li><a href="analytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a></li>
+                    <li><a href="notification.html"><i class="fa-regular fa-bell"></i> Notification</a></li>
+                    <li class="active"><a href="profile.html"><i class="fa-solid fa-user"></i> Profile</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <div class="header-title">
+                    <h1>Account Settings</h1>
+                </div>
+            </header>
+
+            <div class="panel" style="max-width: 500px; margin: 0 auto; background: var(--card-bg); padding: 40px; border-radius: 20px; box-shadow: var(--panel-shadow);">
+                <div style="position: relative; width: 100px; height: 100px; margin: 0 auto 20px;">
+                    <div style="width: 100%; height: 100%; background: var(--accent-color); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-user" style="font-size: 3rem; color: white;"></i>
+                    </div>
+                </div>
+
+                <form id="profile-form">
+                    <div style="text-align: left; margin-bottom: 15px;">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Full Name</label>
+                        <input type="text" id="profile-name" class="auth-input" placeholder="Enter your name">
+                    </div>
+                    <div style="text-align: left; margin-bottom: 25px;">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Email Address</label>
+                        <input type="email" id="profile-email-input" class="auth-input" placeholder="Email" required>
+                    </div>
+                    
+                    <button type="submit" id="update-profile-btn" class="auth-btn">Save Changes</button>
+                    <button type="button" id="logout-btn" class="auth-btn" style="background-color: var(--danger); margin-top: 10px;">Logout</button>
+                </form>
+                <p id="profile-msg" style="margin-top: 15px; font-size: 0.9rem;"></p>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

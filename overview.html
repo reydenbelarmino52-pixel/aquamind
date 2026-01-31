@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaMinds - Overview</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div id="overlay" class="overlay"></div>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-leaf"></i>
+                <h2>AquaMinds</h2>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active"><a href="overview.html"><i class="fa-solid fa-house"></i> Overview</a></li>
+                    <li><a href="analytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a></li>
+                    <li><a href="notification.html"><i class="fa-regular fa-bell"></i> Notification</a></li>
+                    <li><a href="profile.html"><i class="fa-solid fa-user"></i> Profile</a></li>
+                </ul>
+            </nav>
+            <div class="status-indicator">
+                <span class="status-online"></span> System Online
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button id="menu-toggle" class="menu-btn"><i class="fa-solid fa-bars"></i></button>
+                    <div class="header-title">
+                        <h1>Overview</h1>
+                        <p id="current-date">Loading date...</p>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <button id="theme-toggle" class="icon-btn" title="Toggle Dark Mode">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <div class="user-profile">
+                        <i class="fa-solid fa-circle-user"></i>
+                        <span id="user-display-name">User</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="overview-top-row">
+                <div class="summary-card glass-panel">
+                    <div class="card-header"><i class="fa-solid fa-fish"></i> Tilapia</div>
+                    <div class="mini-metrics">
+                        <div><span>pH Level</span><h3 id="ov-tilapia-ph">--</h3></div>
+                        <div><span>Temp°C</span><h3 id="ov-tilapia-temp">--</h3></div>
+                    </div>
+                </div>
+
+                <div class="summary-card glass-panel">
+                    <div class="card-header"><i class="fa-solid fa-filter"></i> Biofilter</div>
+                    <div class="mini-metrics">
+                        <div><span>pH Level</span><h3 id="ov-bio-ph">--</h3></div>
+                        <div><span>Temp°C</span><h3 id="ov-bio-temp">--</h3></div>
+                    </div>
+                </div>
+
+                <div class="summary-pill glass-panel">
+                    <i class="fa-solid fa-water"></i>
+                    <div><span>Level</span><h3 id="ov-water">--%</h3></div>
+                </div>
+                <div class="summary-pill glass-panel">
+                    <i class="fa-solid fa-glass-water"></i>
+                    <div><span>TDS</span><h3 id="ov-tds">-- ppm</h3></div>
+                </div>
+                <div class="summary-pill glass-panel">
+                    <i class="fa-solid fa-bolt"></i>
+                    <div><span>EC</span><h3 id="ov-ec">-- µS</h3></div>
+                </div>
+            </div>
+
+            <div class="overview-main-split">
+                <div class="growth-card">
+                    <h3>Estimate Growth Rate</h3>
+                    <div class="growth-visual">
+                        <div class="plant-stage">
+                            <i class="fa-solid fa-seedling" id="growth-icon"></i>
+                        </div>
+                    </div>
+                    <div class="growth-timeline">
+                        <span id="growth-week">Week 1</span>
+                        <div class="progress-bar"><div class="fill" id="growth-fill" style="width: 25%"></div></div>
+                    </div>
+                </div>
+
+                <div id="overview-status-card" class="status-card optimal">
+                    <h4 id="status-card-title" class="status-header">Status: All Systems Optimal</h4>
+                    <ul class="status-list" id="status-list">
+                        <li>
+                            <div class="status-icon-circle"><i class="fa-solid fa-fish"></i></div>
+                            <span>Optimal Growth</span>
+                        </li>
+                        <li>
+                            <div class="status-icon-circle"><i class="fa-solid fa-filter"></i></div>
+                            <span>Biofilter Active</span>
+                        </li>
+                        <li>
+                            <div class="status-icon-circle"><i class="fa-solid fa-flask"></i></div>
+                            <span>Nutrient Levels Stable</span>
+                        </li>
+                    </ul>
+                    <button class="view-all-btn">View All</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
