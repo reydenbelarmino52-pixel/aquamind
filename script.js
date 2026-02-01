@@ -5,7 +5,35 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* =========================================
-   1. SECURITY & SESSION CHECK
+   1. VISUAL EFFECTS (BUBBLES)
+   ========================================= */
+function createBubbles() {
+    const liquidContainers = document.querySelectorAll('.liquid-container');
+    
+    liquidContainers.forEach(container => {
+        const existingBubbles = container.querySelectorAll('.bubble');
+        if(existingBubbles.length > 0) return; 
+
+        for (let i = 0; i < 10; i++) {
+            const bubble = document.createElement('div');
+            bubble.classList.add('bubble');
+            const size = Math.random() * 10 + 5 + 'px'; 
+            const left = Math.random() * 80 + 10 + '%'; 
+            const duration = Math.random() * 3 + 3 + 's'; 
+            const delay = Math.random() * 5 + 's';
+            bubble.style.width = size;
+            bubble.style.height = size;
+            bubble.style.left = left;
+            bubble.style.animationDuration = duration;
+            bubble.style.animationDelay = delay;
+            container.appendChild(bubble);
+        }
+    });
+}
+document.addEventListener('DOMContentLoaded', createBubbles);
+
+/* =========================================
+   2. SECURITY & AUTH
    ========================================= */
 async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -24,29 +52,26 @@ async function checkAuth() {
 checkAuth();
 
 /* =========================================
-   2. MOBILE SIDEBAR TOGGLE
+   3. MENU & THEME
    ========================================= */
 const menuBtn = document.getElementById('menu-toggle');
-const sidebar = document.getElementById('sidebar') || document.querySelector('.sidebar');
+const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('overlay');
 
-function toggleMenu() {
-    if (sidebar) sidebar.classList.toggle('active');
-    if (overlay) overlay.classList.toggle('active');
-}
-
-if (menuBtn) menuBtn.addEventListener('click', toggleMenu);
-
-if (overlay) {
-    overlay.addEventListener('click', () => {
-        if (sidebar) sidebar.classList.remove('active');
-        if (overlay) overlay.classList.remove('active');
+if (menuBtn) {
+    menuBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        if(overlay) overlay.classList.toggle('active');
     });
 }
 
-/* =========================================
-   3. THEME TOGGLE
-   ========================================= */
+if (overlay) {
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+}
+
 const themeToggleBtn = document.getElementById('theme-toggle');
 const body = document.body;
 
@@ -55,18 +80,12 @@ function loadTheme() {
     if (savedTheme === 'dark') {
         body.setAttribute('data-theme', 'dark');
         updateThemeIcon(true);
-    } else {
-        body.removeAttribute('data-theme');
-        updateThemeIcon(false);
     }
 }
 
 function updateThemeIcon(isDark) {
     if (!themeToggleBtn) return;
-    const icon = themeToggleBtn.querySelector('i');
-    if (icon) {
-        icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-    }
+    themeToggleBtn.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
 }
 
 if (themeToggleBtn) {
@@ -86,92 +105,15 @@ if (themeToggleBtn) {
 loadTheme();
 
 /* =========================================
-   4. AUTHENTICATION LOGIC
-   ========================================= */
-const authForm = document.getElementById('auth-form');
-const toggleAuthBtn = document.getElementById('toggle-auth');
-const nameField = document.getElementById('name-field-container');
-const authTitle = document.getElementById('auth-title');
-const submitBtn = document.getElementById('submit-btn');
-const authMessage = document.getElementById('auth-message');
-
-let isLoginMode = true;
-
-if (toggleAuthBtn) {
-    toggleAuthBtn.addEventListener('click', () => {
-        isLoginMode = !isLoginMode;
-        authTitle.textContent = isLoginMode ? "Welcome Back" : "Create Account";
-        submitBtn.textContent = isLoginMode ? "Login" : "Sign Up";
-        nameField.style.display = isLoginMode ? "none" : "block";
-        toggleAuthBtn.innerHTML = isLoginMode ? 
-            "Don't have an account? <span>Sign Up</span>" : 
-            "Already have an account? <span>Login</span>";
-        authMessage.textContent = "";
-    });
-}
-
-if (authForm) {
-    authForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const fullName = document.getElementById('full-name') ? document.getElementById('full-name').value : '';
-
-        submitBtn.disabled = true;
-        authMessage.style.color = "var(--text-secondary)";
-        authMessage.textContent = "Processing...";
-
-        try {
-            if (isLoginMode) {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                window.location.href = 'overview.html';
-            } else {
-                const { data, error } = await supabaseClient.auth.signUp({
-                    email,
-                    password,
-                    options: { data: { full_name: fullName } }
-                });
-                if (error) throw error;
-                authMessage.style.color = "var(--success)";
-                authMessage.textContent = "Success! Please check your email to confirm.";
-            }
-        } catch (error) {
-            authMessage.style.color = "var(--danger)";
-            authMessage.textContent = error.message;
-        } finally {
-            submitBtn.disabled = false;
-        }
-    });
-}
-
-/* =========================================
-   5. LOGOUT LOGIC
-   ========================================= */
-const logoutBtn = document.getElementById('logout-btn');
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-        try {
-            const { error } = await supabaseClient.auth.signOut();
-            if (error) throw error;
-            window.location.href = 'index.html';
-        } catch (error) {
-            console.error('Error logging out:', error.message);
-            alert('Error logging out. Please try again.');
-        }
-    });
-}
-
-/* =========================================
-   6. SENSOR DATA & SYSTEM STATUS (FIXED)
+   4. DATA FETCHING & SYSTEM STATUS
    ========================================= */
 
-// Helper to update the UI status
+// Updates the small "Online/Offline" pill in the sidebar
 function setSystemStatus(isOnline) {
     const statusContainer = document.querySelector('.status-indicator');
     if (!statusContainer) return;
 
-    const color = isOnline ? '#00ff88' : '#ff4500'; // Green vs Red
+    const color = isOnline ? 'var(--success)' : 'var(--danger)';
     const text = isOnline ? 'System Online' : 'System Offline';
     const shadow = isOnline ? `0 0 10px ${color}` : 'none';
 
@@ -191,32 +133,41 @@ async function fetchSensorData() {
             .order('created_at', { ascending: false })
             .limit(1);
 
-        // CASE 1: Error or No Data -> OFFLINE
+        // FAIL SAFE: If error or no data, Mark Offline
         if (error || !data || data.length === 0) {
             setSystemStatus(false);
+            // Also update Overview Card to Offline
+            updateOverviewStatus(null, false);
             return;
         }
 
         const reading = data[0];
         
-        // CASE 2: Calculate Time Difference
-        // NOTE: 'created_at' from Supabase is UTC. Date.now() is UTC-based.
+        // ACCURACY CHECK: Compare Timestamp (60s threshold)
         const readingTime = new Date(reading.created_at).getTime();
         const now = Date.now();
         const diffInSeconds = (now - readingTime) / 1000;
 
-        // Threshold: 60 seconds (Adjust if your ESP32 sends data slower)
-        // If diff is negative (clock drift), we assume online if small, offline if huge
         const isOnline = diffInSeconds < 60 && diffInSeconds > -60;
-
         setSystemStatus(isOnline);
         
-        // Only update widgets if online (or show stale data with a visual cue if you prefer)
+        // Update basic numbers
         updateDashboardWidgets(reading);
+        
+        // Update Overview Status Card (The big colored card)
+        if (document.getElementById('overview-status-card')) {
+            updateOverviewStatus(reading, isOnline);
+        }
+
+        // Run AI Analysis (Only if on Analytics Page)
+        if (document.getElementById('rec-list')) {
+            generateAIRecommendations(reading, isOnline);
+        }
 
     } catch (err) {
         console.error("Fetch error:", err);
-        setSystemStatus(false); // Fail-safe to offline
+        setSystemStatus(false);
+        updateOverviewStatus(null, false);
     }
 }
 
@@ -234,6 +185,7 @@ function updateDashboardWidgets(reading) {
     safeSetText('ov-ec', reading.ec_value + " µS");
     safeSetText('ov-water', reading.water_level + "%");
     
+    // Analytics Page Elements
     safeSetText('tilapia-temp', reading.tilapia_temp + " °C");
     safeSetText('tilapia-ph', reading.tilapia_ph);
     safeSetText('bio-temp', reading.bio_temp + " °C");
@@ -241,24 +193,130 @@ function updateDashboardWidgets(reading) {
     safeSetText('water-level', reading.water_level + "%");
     safeSetText('tds-value', reading.tds_value);
     
-    const waterCard = document.getElementById('water-card');
-    if (waterCard) {
-        waterCard.className = 'water-card';
-        if (reading.water_level < 30) waterCard.classList.add('critical');
-        else if (reading.water_level < 60) waterCard.classList.add('warning');
-        else waterCard.classList.add('good');
+    // Dynamic Water Height
+    const liquid = document.querySelector('.liquid-container');
+    if (liquid) {
+        const percentage = reading.water_level;
+        const topValue = 100 - percentage; 
+        liquid.style.top = (topValue - 30) + '%'; 
     }
 }
 
 /* =========================================
-   7. HARDWARE CONTROLS
+   5. OVERVIEW STATUS CARD LOGIC
    ========================================= */
-async function toggleDevice(columnName, state) {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) {
-        alert("Session expired. Please login again.");
+function updateOverviewStatus(reading, isOnline) {
+    const card = document.getElementById('overview-status-card');
+    const title = document.getElementById('status-card-title');
+    const list = document.getElementById('status-list');
+
+    if (!card || !title || !list) return;
+
+    // SCENARIO 1: OFFLINE
+    if (!isOnline || !reading) {
+        card.className = "status-card danger";
+        title.innerText = "Status: System Offline";
+        list.innerHTML = `
+            <li><div class="status-icon-circle" style="color:#C53030"><i class="fa-solid fa-power-off"></i></div><span>Connection Lost</span></li>
+            <li><div class="status-icon-circle" style="color:#C53030"><i class="fa-solid fa-wifi"></i></div><span>Check ESP32</span></li>
+        `;
         return;
     }
+
+    // SCENARIO 2: ANALYZE DATA FOR WARNINGS
+    let issues = [];
+
+    // Temp Check
+    if (reading.tilapia_temp < 20) issues.push({icon: "fa-temperature-arrow-down", text: "Water Temp Low", type: "warning"});
+    else if (reading.tilapia_temp > 33) issues.push({icon: "fa-temperature-arrow-up", text: "Water Temp High!", type: "danger"});
+
+    // pH Check
+    if (reading.tilapia_ph < 6.0) issues.push({icon: "fa-flask", text: "pH Acidic", type: "warning"});
+    else if (reading.tilapia_ph > 8.5) issues.push({icon: "fa-flask", text: "pH Alkaline", type: "warning"});
+
+    // Water Level Check
+    if (reading.water_level < 30) issues.push({icon: "fa-water", text: "Water Critical!", type: "danger"});
+    else if (reading.water_level < 60) issues.push({icon: "fa-water", text: "Water Low", type: "warning"});
+
+    // SCENARIO 3: DETERMINE CARD STATE
+    if (issues.length === 0) {
+        // All Good
+        card.className = "status-card optimal";
+        title.innerText = "Status: All Systems Optimal";
+        list.innerHTML = `
+            <li><div class="status-icon-circle" style="color:#2F855A"><i class="fa-solid fa-fish"></i></div><span>Optimal Growth</span></li>
+            <li><div class="status-icon-circle" style="color:#2F855A"><i class="fa-solid fa-filter"></i></div><span>Biofilter Active</span></li>
+            <li><div class="status-icon-circle" style="color:#2F855A"><i class="fa-solid fa-check"></i></div><span>Levels Stable</span></li>
+        `;
+    } else {
+        // Has Issues
+        const isCritical = issues.some(i => i.type === "danger");
+        card.className = isCritical ? "status-card danger" : "status-card warning";
+        title.innerText = isCritical ? "Status: Critical Attention Needed" : "Status: Warnings Detected";
+        
+        // Rebuild list with specific issues
+        list.innerHTML = "";
+        issues.forEach(issue => {
+            const color = isCritical ? "#C53030" : "#D69E2E";
+            list.innerHTML += `
+                <li>
+                    <div class="status-icon-circle" style="color:${color}"><i class="fa-solid ${issue.icon}"></i></div>
+                    <span>${issue.text}</span>
+                </li>
+            `;
+        });
+    }
+}
+
+/* =========================================
+   6. ANALYTICS RECOMMENDATION ENGINE
+   ========================================= */
+function generateAIRecommendations(reading, isOnline) {
+    const list = document.getElementById('rec-list');
+    const card = document.getElementById('recommendation-card');
+    if (!list || !card) return;
+
+    list.innerHTML = ""; 
+
+    if (!isOnline) {
+        card.className = "recommendation-card danger";
+        list.innerHTML = `<li><i class="fa-solid fa-triangle-exclamation" style="color: #F56565;"></i> <span>System is Offline. Check power or ESP32 connection.</span></li>`;
+        return;
+    }
+
+    let issues = [];
+    if (reading.tilapia_temp < 20) issues.push({ msg: "Water temp is low. Check heater.", type: "warning" });
+    else if (reading.tilapia_temp > 32) issues.push({ msg: "Water temp is high. Add shade or cool water.", type: "danger" });
+
+    if (reading.tilapia_ph < 6.0) issues.push({ msg: "pH is acidic. Add crushed eggshells or buffer.", type: "warning" });
+    else if (reading.tilapia_ph > 8.5) issues.push({ msg: "pH is alkaline. Add lemon juice or pH down.", type: "warning" });
+
+    if (reading.water_level < 30) issues.push({ msg: "Critical water level! Refill immediately.", type: "danger" });
+    else if (reading.water_level < 60) issues.push({ msg: "Water level is low. Prepare for refill.", type: "warning" });
+
+    if (issues.length === 0) {
+        card.className = "recommendation-card optimal";
+        list.innerHTML = `<li><i class="fa-solid fa-check-circle" style="color: #48BB78;"></i> <span>System is optimal. Fish are happy!</span></li>`;
+    } else {
+        const hasDanger = issues.some(i => i.type === "danger");
+        card.className = hasDanger ? "recommendation-card danger" : "recommendation-card warning";
+
+        issues.forEach(issue => {
+            const color = issue.type === "danger" ? "#F56565" : "#ECC94B";
+            const icon = issue.type === "danger" ? "fa-circle-exclamation" : "fa-triangle-exclamation";
+            list.innerHTML += `
+                <li style="margin-bottom: 10px;">
+                    <i class="fa-solid ${icon}" style="color: ${color};"></i> 
+                    <span>${issue.msg}</span>
+                </li>`;
+        });
+    }
+}
+
+/* =========================================
+   7. CONTROLS LOGIC
+   ========================================= */
+async function toggleDevice(columnName, state) {
     await supabaseClient.from('controls').update({ [columnName]: state }).eq('id', 1);
 }
 
@@ -273,19 +331,15 @@ document.getElementById('btn-feed-now')?.addEventListener('click', async () => {
 });
 
 /* =========================================
-   8. INITIALIZATION
+   8. INIT LOOP
    ========================================= */
 const currentPath = window.location.pathname;
-if (
-    currentPath.includes('overview') || 
-    currentPath.includes('analytics') || 
-    currentPath.includes('profile') || 
-    currentPath.includes('notification')
-) {
-    // 1. Immediately set status to "Checking..." or Offline on load
-    setSystemStatus(false); 
+if (['overview', 'analytics', 'profile', 'notification'].some(p => currentPath.includes(p))) {
+    // Initial check to offline
+    setSystemStatus(false);
+    updateOverviewStatus(null, false);
     
-    // 2. Fetch real data
-    fetchSensorData(); 
+    // Start Loop
+    fetchSensorData();
     setInterval(fetchSensorData, 3000);
 }
