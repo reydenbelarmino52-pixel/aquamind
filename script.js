@@ -2,8 +2,32 @@
 const SUPABASE_URL = "https://lskiuxhcyrhsijrnznnj.supabase.co"; 
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxza2l1eGhjeXJoc2lqcm56bm5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNTk4NTksImV4cCI6MjA4NDczNTg1OX0.R_jSTUfLXlXRNTtohKCYe4LT2iCMCWxYDCJjWmP60WE";
 
-// FIX: Use 'supabaseClient' to avoid conflict with the global 'supabase' library
+// Initialize Supabase Client
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// 0. SECURITY & SESSION CHECK (Prevent Bypass)
+async function checkSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const path = window.location.pathname;
+    
+    // List of pages that require login
+    const protectedPages = ['overview.html', 'analytics.html', 'notification.html', 'profile.html'];
+    
+    // Check if current page is protected
+    const isProtectedPage = protectedPages.some(page => path.includes(page));
+    const isLoginPage = path.includes('index.html') || path === '/' || path.endsWith('/');
+
+    if (!session && isProtectedPage) {
+        // User is NOT logged in but trying to access a protected page -> Kick to login
+        console.warn("Unauthorized access attempt. Redirecting to login.");
+        window.location.href = 'index.html';
+    } else if (session && isLoginPage) {
+        // User IS logged in but trying to access login page -> Send to overview
+        window.location.href = 'overview.html';
+    }
+}
+// Run security check immediately
+checkSession();
 
 // 1. AUTHENTICATION LOGIC (Login & Signup)
 const authForm = document.getElementById('auth-form');
@@ -47,6 +71,7 @@ if (authForm) {
                 // LOGIN LOGIC
                 const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                 if (error) throw error;
+                // Redirect handled by checkSession, but we can force it here too
                 window.location.href = 'overview.html';
             } else {
                 // SIGN UP LOGIC
@@ -83,10 +108,64 @@ if (logoutBtn) {
     });
 }
 
-// 3. SENSOR DATA STREAMING
+// 3. THEME TOGGLE LOGIC (Fix Light/Dark Mode)
+const themeToggleBtn = document.getElementById('theme-toggle');
+const body = document.body;
+
+function initTheme() {
+    // 1. Check if user previously saved a preference
+    const savedTheme = localStorage.getItem('theme');
+    
+    // 2. Apply theme
+    if (savedTheme === 'dark') {
+        body.setAttribute('data-theme', 'dark');
+        updateThemeIcon(true);
+    } else {
+        body.removeAttribute('data-theme');
+        updateThemeIcon(false);
+    }
+}
+
+function updateThemeIcon(isDark) {
+    if (!themeToggleBtn) return;
+    const icon = themeToggleBtn.querySelector('i');
+    if (icon) {
+        // Switch between Sun and Moon icons
+        icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    }
+}
+
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+        // Check current state
+        const isCurrentlyDark = body.getAttribute('data-theme') === 'dark';
+        
+        if (isCurrentlyDark) {
+            // Switch to Light Mode
+            body.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+            updateThemeIcon(false);
+        } else {
+            // Switch to Dark Mode
+            body.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+            updateThemeIcon(true);
+        }
+    });
+}
+
+// Initialize theme on load
+initTheme();
+
+
+// 4. SENSOR DATA STREAMING
 async function fetchSensorData() {
     // Only fetch if elements exist (prevents errors on login page)
     if (!document.getElementById('ov-tilapia-temp') && !document.getElementById('tilapia-temp')) return;
+
+    // Check session again before fetching data (Double Security)
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return; 
 
     const { data, error } = await supabaseClient
         .from('readings')
@@ -122,8 +201,15 @@ async function fetchSensorData() {
     }
 }
 
-// 4. HARDWARE CONTROL (Pumps, Servo & Lights)
+// 5. HARDWARE CONTROL (Pumps, Servo & Lights)
 async function toggleDevice(columnName, state) {
+    // Security check
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+        alert("You must be logged in to control hardware.");
+        return;
+    }
+
     console.log(`Toggling ${columnName} to ${state}`);
     await supabaseClient.from('controls').update({ [columnName]: state }).eq('id', 1);
 }
