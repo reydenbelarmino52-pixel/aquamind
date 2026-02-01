@@ -81,7 +81,7 @@ body {
 /* SIDE-BY-SIDE LAYOUT (Fixed Gap) */
 .controls-layout {
     display: flex;
-    gap: 50px; /* Increased gap as requested */
+    gap: 50px;
     width: 100%;
     align-items: stretch;
     margin-top: 30px;
@@ -110,9 +110,11 @@ body {
     padding: 0 10px;
 }
 
-.logo i {
-    font-size: 1.5rem;
-    color: var(--accent-color);
+/* NEW LOGO STYLE FOR SIDEBAR */
+.logo img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
 }
 
 .logo h2 {
@@ -771,12 +773,9 @@ input:checked + .slider:before { transform: translateX(24px); }
     .header-actions .user-profile span { display: none; }
 }
 
-/* ... (Keep your existing CSS above this) ... */
-
 /* =========================================
    NEW AUTH STYLES (Password & Strength)
    ========================================= */
-
 .password-wrapper {
     position: relative;
     width: 100%;
@@ -821,3 +820,13 @@ input:checked + .slider:before { transform: translateX(24px); }
 .bg-weak { background-color: #F56565 !important; }
 .bg-medium { background-color: #ECC94B !important; }
 .bg-strong { background-color: #48BB78 !important; }
+
+/* NEW AUTH LOGO STYLE */
+.auth-logo {
+    height: 60px;
+    width: auto;
+    margin-bottom: 15px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

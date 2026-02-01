@@ -2,6 +2,13 @@
 const SUPABASE_URL = "https://lskiuxhcyrhsijrnznnj.supabase.co"; 
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxza2l1eGhjeXJoc2lqcm56bm5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNTk4NTksImV4cCI6MjA4NDczNTg1OX0.R_jSTUfLXlXRNTtohKCYe4LT2iCMCWxYDCJjWmP60WE";
 
+// --- SAFETY CHECK: Ensure Supabase Library is Loaded ---
+if (typeof supabase === 'undefined') {
+    console.error("CRITICAL ERROR: Supabase library not found.");
+    alert("System Error: Could not connect to the database library.\n\nPlease check your internet connection and ensure the '@supabase/supabase-js' script tag is in your HTML head.");
+    throw new Error("Supabase not defined");
+}
+
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* =========================================
@@ -38,17 +45,23 @@ document.addEventListener('DOMContentLoaded', createBubbles);
 async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     const path = window.location.pathname;
+    
+    // List of pages that require login
     const protectedPages = ['overview.html', 'analytics.html', 'notification.html', 'profile.html'];
     
+    // Check if current page is protected
     const isProtected = protectedPages.some(page => path.includes(page));
-    const isLoginPage = path.includes('index.html') || path === '/' || path.endsWith('/');
+    const isLoginPage = path.includes('index.html') || path.endsWith('/') || path.endsWith('AquaMinds%20-%20Copy/'); // Handle folder root
 
     if (isProtected && !session) {
+        // Redirect to login if on protected page and not logged in
         window.location.href = 'index.html';
     } else if (isLoginPage && session) {
+        // Redirect to overview if on login page and already logged in
         window.location.href = 'overview.html';
     }
 }
+// Run checkAuth immediately
 checkAuth();
 
 /* =========================================
@@ -148,7 +161,7 @@ if (toggleAuthBtn) {
             authTitle.innerText = "Create Account";
             authSubtitle.innerText = "Join AquaMinds today";
             nameField.style.display = "block";
-            strengthContainer.style.display = "block"; // Show strength meter
+            strengthContainer.style.display = "block"; 
             submitBtn.innerText = "Sign Up";
             toggleAuthBtn.innerHTML = `Already have an account? <span>Login</span>`;
             document.getElementById('full-name').setAttribute('required', 'true');
@@ -157,7 +170,7 @@ if (toggleAuthBtn) {
             authTitle.innerText = "Welcome Back";
             authSubtitle.innerText = "Monitor your aquaponics system";
             nameField.style.display = "none";
-            strengthContainer.style.display = "none"; // Hide strength meter
+            strengthContainer.style.display = "none"; 
             submitBtn.innerText = "Login";
             toggleAuthBtn.innerHTML = `Don't have an account? <span>Sign Up</span>`;
             document.getElementById('full-name').removeAttribute('required');
@@ -216,7 +229,7 @@ if (authForm) {
 }
 
 /* =========================================
-   2.6 LOGOUT LOGIC (FIXED)
+   2.6 LOGOUT LOGIC
    ========================================= */
 const logoutBtn = document.getElementById('logout-btn');
 if (logoutBtn) {
@@ -301,6 +314,7 @@ function setSystemStatus(isOnline) {
 }
 
 async function fetchSensorData() {
+    // Only fetch if we have a logged in session
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) return; 
 
@@ -510,6 +524,7 @@ document.getElementById('btn-feed-now')?.addEventListener('click', async () => {
    8. INIT LOOP
    ========================================= */
 const currentPath = window.location.pathname;
+// Check if we are on a dashboard page to start the loop
 if (['overview', 'analytics', 'profile', 'notification'].some(p => currentPath.includes(p))) {
     // Initial check to offline
     setSystemStatus(false);
