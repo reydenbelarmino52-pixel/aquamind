@@ -168,7 +168,7 @@ body {
 }
 
 /* =========================================
-   HEADER
+   HEADER & NAVIGATION
    ========================================= */
 header {
     display: flex;
@@ -230,6 +230,18 @@ header {
 .user-profile span {
     font-weight: 600;
     font-size: 0.95rem;
+}
+
+/* --- MOBILE MENU BUTTON (Fixed Position) --- */
+.menu-btn {
+    display: none; /* Hidden by default on desktop */
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 5px;
+    z-index: 1001;
 }
 
 /* =========================================
@@ -702,7 +714,9 @@ input:checked + .slider:before { transform: translateX(24px); }
     text-decoration: underline;
 }
 
-/* Mobile & Tablet */
+/* =========================================
+   MEDIA QUERIES (MOBILE & TABLET)
+   ========================================= */
 @media (max-width: 1024px) {
     .overview-main-split { grid-template-columns: 1fr; }
     .analytics-grid { grid-template-columns: 1fr 1fr; }
@@ -715,11 +729,15 @@ input:checked + .slider:before { transform: translateX(24px); }
     .sidebar {
         position: fixed; top: 0; left: 0; height: 100vh; width: 260px;
         transform: translateX(-100%); box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+        z-index: 1000;
     }
     .sidebar.active { transform: translateX(0); }
     .main-content { padding: 20px 15px; margin-left: 0; }
     header { margin-bottom: 25px; flex-wrap: wrap; }
+    
+    /* Show menu button on mobile */
     .menu-btn { display: block; }
+    
     .header-title h1 { font-size: 1.5rem; }
     .header-title p { display: none; } 
     .overview-top-row { grid-template-columns: 1fr 1fr; gap: 15px; }
@@ -739,6 +757,9 @@ input:checked + .slider:before { transform: translateX(24px); }
     .header-actions .user-profile span { display: none; }
 }
 
+/* =========================================
+   ADDITIONAL COMPONENTS
+   ========================================= */
 /* Password & Strength */
 .password-wrapper { position: relative; width: 100%; }
 #toggle-password {
@@ -767,11 +788,8 @@ input:checked + .slider:before { transform: translateX(24px); }
     transition: transform 0.2s; border: 2px solid white;
 }
 .avatar-overlay:hover { transform: scale(1.1); background: var(--accent-color); }
-.menu-btn { display: none; background: none; border: none; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; padding: 5px; }
 
-/* =========================================
-   POPUP NOTIFICATION STYLES
-   ========================================= */
+/* Popup Notification */
 .popup-overlay {
     position: fixed;
     top: 0;
@@ -807,5 +825,5 @@ input:checked + .slider:before { transform: translateX(24px); }
 }
 
 .popup-overlay.active .popup-card {
-    transform: scale(1); /* Bounce animation */
+    transform: scale(1);
 }

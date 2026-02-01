@@ -1,4 +1,4 @@
-// AquaMinds - script.js (vFinal - Popup, Profile, Status, DarkMode)
+// AquaMinds - script.js (vFinal)
 const SUPABASE_URL = "https://lskiuxhcyrhsijrnznnj.supabase.co"; 
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxza2l1eGhjeXJoc2lqcm56bm5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNTk4NTksImV4cCI6MjA4NDczNTg1OX0.R_jSTUfLXlXRNTtohKCYe4LT2iCMCWxYDCJjWmP60WE";
 
@@ -45,7 +45,6 @@ async function loadUserProfileDisplay() {
         const headerProfile = document.querySelector('.user-profile span');
         if (nameDisplay) nameDisplay.textContent = data.full_name || 'User';
         if (headerProfile) headerProfile.textContent = data.full_name || 'User';
-        // You could also update avatar img if you had one in header
     }
 }
 
