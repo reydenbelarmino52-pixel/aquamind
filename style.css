@@ -1,5 +1,5 @@
 /* =========================================
-   AQUAMINDS UI - COMPLETE & POLISHED
+   AQUAMINDS UI - COMPLETE & POLISHED (vFinal)
    ========================================= */
 
 /* GLOBAL RESET & TYPOGRAPHY */
@@ -78,7 +78,6 @@ body {
     margin: 0 auto;
 }
 
-/* SIDE-BY-SIDE LAYOUT (Fixed Gap) */
 .controls-layout {
     display: flex;
     gap: 50px;
@@ -110,7 +109,6 @@ body {
     padding: 0 10px;
 }
 
-/* NEW LOGO STYLE FOR SIDEBAR */
 .logo img {
     height: 40px;
     width: auto;
@@ -259,10 +257,6 @@ header {
     margin-bottom: 30px;
 }
 
-.summary-card, .summary-pill {
-    transition: transform 0.2s;
-}
-
 .summary-card:hover, .summary-pill:hover {
     transform: translateY(-5px);
     box-shadow: var(--hover-shadow);
@@ -293,7 +287,7 @@ header {
 }
 
 /* =========================================
-   ANALYTICS & WATER (BUBBLES)
+   ANALYTICS & WATER
    ========================================= */
 .analytics-grid {
     display: grid;
@@ -368,7 +362,6 @@ header {
 
 @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* BUBBLE ANIMATION */
 .bubble {
     position: absolute;
     bottom: -10px;
@@ -629,8 +622,17 @@ input:checked + .slider:before { transform: translateX(24px); }
 }
 
 /* =========================================
-   AUTH PAGE
+   AUTH PAGE & UTILS
    ========================================= */
+/* Fix for huge logo on login screen */
+.auth-logo {
+    width: 100px;           /* Set a fixed width */
+    height: 100px;          /* Set a fixed height */
+    object-fit: contain;    /* Ensures image doesn't stretch */
+    margin: 0 auto 20px;    /* Center horizontally + 20px bottom margin */
+    display: block;         /* Required for margin: auto to work */
+}
+
 .auth-container {
     display: flex;
     justify-content: center;
@@ -700,22 +702,7 @@ input:checked + .slider:before { transform: translateX(24px); }
     text-decoration: underline;
 }
 
-/* =========================================
-   RESPONSIVE DESIGN (MOBILE & TABLET)
-   ========================================= */
-
-/* Menu Toggle Button */
-.menu-btn {
-    display: none;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--text-primary);
-    cursor: pointer;
-    padding: 5px;
-}
-
-/* Tablet & Smaller Laptops */
+/* Mobile & Tablet */
 @media (max-width: 1024px) {
     .overview-main-split { grid-template-columns: 1fr; }
     .analytics-grid { grid-template-columns: 1fr 1fr; }
@@ -723,48 +710,27 @@ input:checked + .slider:before { transform: translateX(24px); }
     .water-card .liquid-container { width: 100%; }
 }
 
-/* Mobile Devices */
 @media (max-width: 768px) {
     .dashboard-container { display: block; } 
-    
     .sidebar {
-        position: fixed;
-        top: 0; left: 0;
-        height: 100vh;
-        width: 260px;
-        transform: translateX(-100%); 
-        box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+        position: fixed; top: 0; left: 0; height: 100vh; width: 260px;
+        transform: translateX(-100%); box-shadow: 5px 0 15px rgba(0,0,0,0.2);
     }
-    
     .sidebar.active { transform: translateX(0); }
     .main-content { padding: 20px 15px; margin-left: 0; }
     header { margin-bottom: 25px; flex-wrap: wrap; }
     .menu-btn { display: block; }
     .header-title h1 { font-size: 1.5rem; }
     .header-title p { display: none; } 
-
     .overview-top-row { grid-template-columns: 1fr 1fr; gap: 15px; }
     .analytics-grid { grid-template-columns: 1fr; }
     .water-card { grid-column: auto; height: 250px; }
-    
-    /* STACK CONTROLS ON MOBILE */
-    .controls-layout {
-        flex-direction: column;
-        gap: 30px;
-    }
-
+    .controls-layout { flex-direction: column; gap: 30px; }
     .overlay {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5);
-        z-index: 90;
-        opacity: 0;
-        visibility: hidden;
-        transition: 0.3s;
-        backdrop-filter: blur(2px);
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 90; opacity: 0; visibility: hidden;
+        transition: 0.3s; backdrop-filter: blur(2px);
     }
-    
     .overlay.active { opacity: 1; visibility: visible; }
 }
 
@@ -773,60 +739,73 @@ input:checked + .slider:before { transform: translateX(24px); }
     .header-actions .user-profile span { display: none; }
 }
 
-/* =========================================
-   NEW AUTH STYLES (Password & Strength)
-   ========================================= */
-.password-wrapper {
-    position: relative;
-    width: 100%;
-}
-
+/* Password & Strength */
+.password-wrapper { position: relative; width: 100%; }
 #toggle-password {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: var(--text-secondary);
-    font-size: 1rem;
-    z-index: 10;
+    position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+    cursor: pointer; color: var(--text-secondary); font-size: 1rem; z-index: 10;
 }
+#toggle-password:hover { color: var(--accent-color); }
+.strength-bar-bg { width: 100%; height: 4px; background-color: #E2E8F0; border-radius: 2px; margin-top: 5px; overflow: hidden; }
+#strength-bar-fill { height: 100%; width: 0%; background-color: transparent; transition: width 0.3s ease, background-color 0.3s ease; }
 
-#toggle-password:hover {
-    color: var(--accent-color);
+/* Logs Table */
+#logs-body tr { border-bottom: 1px solid var(--border-color); transition: background-color 0.2s; }
+#logs-body tr:hover { background-color: rgba(0,0,0,0.02); }
+#logs-body td { padding: 15px 10px; font-size: 0.9rem; color: var(--text-primary); }
+
+/* Profile Avatar */
+.profile-avatar-container { position: relative; width: 120px; height: 120px; margin: 0 auto 30px; }
+#avatar-preview {
+    width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+    border: 4px solid var(--accent-color); box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
+.avatar-overlay {
+    position: absolute; bottom: 0; right: 0; width: 40px; height: 40px;
+    background: var(--sidebar-bg); border-radius: 50%; display: flex;
+    justify-content: center; align-items: center; cursor: pointer; color: white;
+    transition: transform 0.2s; border: 2px solid white;
+}
+.avatar-overlay:hover { transform: scale(1.1); background: var(--accent-color); }
+.menu-btn { display: none; background: none; border: none; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; padding: 5px; }
 
-.strength-bar-bg {
+/* =========================================
+   POPUP NOTIFICATION STYLES
+   ========================================= */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 4px;
-    background-color: #E2E8F0;
-    border-radius: 2px;
-    margin-top: 5px;
-    overflow: hidden;
-}
-
-#strength-bar-fill {
     height: 100%;
-    width: 0%;
-    background-color: transparent;
-    transition: width 0.3s ease, background-color 0.3s ease;
+    background: rgba(0, 0, 0, 0.5); /* Dim background */
+    z-index: 1000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-/* Strength Colors */
-.strength-weak { color: #F56565; }
-.strength-medium { color: #ECC94B; }
-.strength-strong { color: #48BB78; }
+.popup-overlay.active {
+    display: flex;
+    opacity: 1;
+}
 
-.bg-weak { background-color: #F56565 !important; }
-.bg-medium { background-color: #ECC94B !important; }
-.bg-strong { background-color: #48BB78 !important; }
+.popup-card {
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    width: 90%;
+    max-width: 350px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    border: 1px solid var(--border-color);
+    transform: scale(0.8);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
 
-/* NEW AUTH LOGO STYLE */
-.auth-logo {
-    height: 60px;
-    width: auto;
-    margin-bottom: 15px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+.popup-overlay.active .popup-card {
+    transform: scale(1); /* Bounce animation */
 }
