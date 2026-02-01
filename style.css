@@ -770,3 +770,54 @@ input:checked + .slider:before { transform: translateX(24px); }
     .overview-top-row { grid-template-columns: 1fr; } 
     .header-actions .user-profile span { display: none; }
 }
+
+/* ... (Keep your existing CSS above this) ... */
+
+/* =========================================
+   NEW AUTH STYLES (Password & Strength)
+   ========================================= */
+
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+#toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    z-index: 10;
+}
+
+#toggle-password:hover {
+    color: var(--accent-color);
+}
+
+.strength-bar-bg {
+    width: 100%;
+    height: 4px;
+    background-color: #E2E8F0;
+    border-radius: 2px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+#strength-bar-fill {
+    height: 100%;
+    width: 0%;
+    background-color: transparent;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* Strength Colors */
+.strength-weak { color: #F56565; }
+.strength-medium { color: #ECC94B; }
+.strength-strong { color: #48BB78; }
+
+.bg-weak { background-color: #F56565 !important; }
+.bg-medium { background-color: #ECC94B !important; }
+.bg-strong { background-color: #48BB78 !important; }

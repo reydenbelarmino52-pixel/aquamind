@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AquaMinds - Access</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -16,11 +17,26 @@
             <p id="auth-subtitle" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">Monitor your aquaponics system</p>
             
             <form id="auth-form">
-                <div id="name-field-container" style="display: none; margin-bottom: 10px;">
+                <div id="name-field-container" style="display: none; margin-bottom: 15px;">
                     <input type="text" id="full-name" class="auth-input" placeholder="Full Name">
                 </div>
-                <input type="email" id="email" class="auth-input" placeholder="Email Address" required>
-                <input type="password" id="password" class="auth-input" placeholder="Password" required>
+                
+                <div style="margin-bottom: 15px;">
+                    <input type="email" id="email" class="auth-input" placeholder="Email Address" required style="margin-bottom: 0;">
+                </div>
+
+                <div class="password-wrapper" style="margin-bottom: 15px;">
+                    <input type="password" id="password" class="auth-input" placeholder="Password" required style="margin-bottom: 0; padding-right: 40px;">
+                    <i class="fa-solid fa-eye" id="toggle-password"></i>
+                </div>
+
+                <div id="password-strength-container" style="display: none; text-align: left; margin-bottom: 15px;">
+                    <div id="password-strength-text" style="font-size: 0.8rem; font-weight: 500;"></div>
+                    <div class="strength-bar-bg">
+                        <div id="strength-bar-fill"></div>
+                    </div>
+                </div>
+
                 <button type="submit" class="auth-btn" id="submit-btn">Login</button>
             </form>
             

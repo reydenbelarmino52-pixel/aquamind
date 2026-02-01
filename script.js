@@ -33,7 +33,7 @@ function createBubbles() {
 document.addEventListener('DOMContentLoaded', createBubbles);
 
 /* =========================================
-   2. SECURITY & AUTH
+   2. AUTHENTICATION & SECURITY
    ========================================= */
 async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -50,6 +50,184 @@ async function checkAuth() {
     }
 }
 checkAuth();
+
+/* =========================================
+   2.5 LOGIN / SIGNUP LOGIC
+   ========================================= */
+const authForm = document.getElementById('auth-form');
+const toggleAuthBtn = document.getElementById('toggle-auth');
+const authTitle = document.getElementById('auth-title');
+const authSubtitle = document.getElementById('auth-subtitle');
+const nameField = document.getElementById('name-field-container');
+const submitBtn = document.getElementById('submit-btn');
+const authMessage = document.getElementById('auth-message');
+
+// Password UI Elements
+const passwordInput = document.getElementById('password');
+const togglePasswordIcon = document.getElementById('toggle-password');
+const strengthContainer = document.getElementById('password-strength-container');
+const strengthText = document.getElementById('password-strength-text');
+const strengthBar = document.getElementById('strength-bar-fill');
+
+let isSignUpMode = false;
+
+// --- A. TOGGLE PASSWORD VISIBILITY ---
+if (togglePasswordIcon && passwordInput) {
+    togglePasswordIcon.addEventListener('click', () => {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Toggle Icon Class
+        if (type === 'text') {
+            togglePasswordIcon.classList.remove('fa-eye');
+            togglePasswordIcon.classList.add('fa-eye-slash');
+        } else {
+            togglePasswordIcon.classList.remove('fa-eye-slash');
+            togglePasswordIcon.classList.add('fa-eye');
+        }
+    });
+}
+
+// --- B. PASSWORD STRENGTH CHECKER ---
+if (passwordInput && strengthContainer) {
+    passwordInput.addEventListener('input', () => {
+        if (!isSignUpMode) return; // Only show strength on Signup
+
+        const val = passwordInput.value;
+        let strength = 0;
+        let status = "";
+        let colorClass = "";
+
+        if (val.length === 0) {
+            strengthBar.style.width = '0%';
+            strengthText.innerText = "";
+            return;
+        }
+
+        // Simple Logic: Length + Character Types
+        if (val.length >= 6) strength++;
+        if (val.length >= 10) strength++;
+        if (/[A-Z]/.test(val)) strength++;
+        if (/[0-9]/.test(val)) strength++;
+        if (/[^A-Za-z0-9]/.test(val)) strength++;
+
+        // Map Score to Status
+        if (strength < 3) {
+            status = "Weak";
+            colorClass = "strength-weak";
+            strengthBar.className = "bg-weak";
+            strengthBar.style.width = "30%";
+        } else if (strength < 5) {
+            status = "Medium";
+            colorClass = "strength-medium";
+            strengthBar.className = "bg-medium";
+            strengthBar.style.width = "60%";
+        } else {
+            status = "Strong";
+            colorClass = "strength-strong";
+            strengthBar.className = "bg-strong";
+            strengthBar.style.width = "100%";
+        }
+
+        strengthText.innerText = status;
+        strengthText.className = colorClass;
+    });
+}
+
+// --- C. TOGGLE LOGIN / SIGNUP MODE ---
+if (toggleAuthBtn) {
+    toggleAuthBtn.addEventListener('click', () => {
+        isSignUpMode = !isSignUpMode;
+        
+        // Clear inputs and messages
+        authForm.reset();
+        authMessage.textContent = "";
+        
+        if (isSignUpMode) {
+            // Switch to Sign Up
+            authTitle.innerText = "Create Account";
+            authSubtitle.innerText = "Join AquaMinds today";
+            nameField.style.display = "block";
+            strengthContainer.style.display = "block"; // Show strength meter
+            submitBtn.innerText = "Sign Up";
+            toggleAuthBtn.innerHTML = `Already have an account? <span>Login</span>`;
+            document.getElementById('full-name').setAttribute('required', 'true');
+        } else {
+            // Switch to Login
+            authTitle.innerText = "Welcome Back";
+            authSubtitle.innerText = "Monitor your aquaponics system";
+            nameField.style.display = "none";
+            strengthContainer.style.display = "none"; // Hide strength meter
+            submitBtn.innerText = "Login";
+            toggleAuthBtn.innerHTML = `Don't have an account? <span>Sign Up</span>`;
+            document.getElementById('full-name').removeAttribute('required');
+        }
+    });
+}
+
+// --- D. HANDLE FORM SUBMIT ---
+if (authForm) {
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('email').value;
+        const password = passwordInput.value;
+        const fullName = document.getElementById('full-name').value;
+        
+        authMessage.style.color = "var(--text-secondary)";
+        authMessage.textContent = "Processing...";
+        submitBtn.disabled = true;
+
+        try {
+            if (isSignUpMode) {
+                // SIGN UP
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: { full_name: fullName }
+                    }
+                });
+                
+                if (error) throw error;
+                
+                authMessage.style.color = "var(--success)";
+                authMessage.textContent = "Success! Please check your email to confirm.";
+                
+            } else {
+                // LOGIN
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                // Redirect manually
+                window.location.href = "overview.html";
+            }
+        } catch (err) {
+            authMessage.style.color = "var(--danger)";
+            authMessage.textContent = err.message;
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+}
+
+/* =========================================
+   2.6 LOGOUT LOGIC (FIXED)
+   ========================================= */
+const logoutBtn = document.getElementById('logout-btn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+            console.error("Logout Error:", error);
+        }
+        window.location.href = 'index.html';
+    });
+}
 
 /* =========================================
    3. MENU & THEME
@@ -136,7 +314,6 @@ async function fetchSensorData() {
         // FAIL SAFE: If error or no data, Mark Offline
         if (error || !data || data.length === 0) {
             setSystemStatus(false);
-            // Also update Overview Card to Offline
             updateOverviewStatus(null, false);
             return;
         }
@@ -154,12 +331,12 @@ async function fetchSensorData() {
         // Update basic numbers
         updateDashboardWidgets(reading);
         
-        // Update Overview Status Card (The big colored card)
+        // Update Overview Status Card
         if (document.getElementById('overview-status-card')) {
             updateOverviewStatus(reading, isOnline);
         }
 
-        // Run AI Analysis (Only if on Analytics Page)
+        // Run AI Analysis
         if (document.getElementById('rec-list')) {
             generateAIRecommendations(reading, isOnline);
         }
@@ -254,7 +431,6 @@ function updateOverviewStatus(reading, isOnline) {
         card.className = isCritical ? "status-card danger" : "status-card warning";
         title.innerText = isCritical ? "Status: Critical Attention Needed" : "Status: Warnings Detected";
         
-        // Rebuild list with specific issues
         list.innerHTML = "";
         issues.forEach(issue => {
             const color = isCritical ? "#C53030" : "#D69E2E";
