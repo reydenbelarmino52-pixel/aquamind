@@ -1,4 +1,4 @@
-// AquaMinds - script.js (vFinal)
+// AquaMinds - script.js (Rule-Based System - No AI)
 const SUPABASE_URL = "https://lskiuxhcyrhsijrnznnj.supabase.co"; 
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxza2l1eGhjeXJoc2lqcm56bm5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNTk4NTksImV4cCI6MjA4NDczNTg1OX0.R_jSTUfLXlXRNTtohKCYe4LT2iCMCWxYDCJjWmP60WE";
 
@@ -39,7 +39,6 @@ checkAuth();
 async function loadUserProfileDisplay() {
     if (!currentUser) return;
     const { data } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
-    
     if (data) {
         const nameDisplay = document.getElementById('user-display-name');
         const headerProfile = document.querySelector('.user-profile span');
@@ -113,18 +112,15 @@ document.getElementById('toggle-password')?.addEventListener('click', function()
 });
 
 /* =========================================
-   2. UI HELPERS (THEME TOGGLE)
+   2. UI HELPERS
    ========================================= */
 const themeToggleBtn = document.getElementById('theme-toggle');
 if (themeToggleBtn) {
     const body = document.body;
-    
-    // Check saved theme
     if (localStorage.getItem('aquaminds-theme') === 'dark') {
         body.setAttribute('data-theme', 'dark');
         themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
     }
-
     themeToggleBtn.addEventListener('click', () => {
         const isDark = body.getAttribute('data-theme') === 'dark';
         if (isDark) {
@@ -139,7 +135,6 @@ if (themeToggleBtn) {
     });
 }
 
-// Mobile Menu
 document.getElementById('menu-toggle')?.addEventListener('click', () => {
     document.getElementById('sidebar').classList.toggle('active');
     document.getElementById('overlay')?.classList.toggle('active');
@@ -169,12 +164,7 @@ if (window.location.pathname.includes('profile.html')) {
         if (!user) return;
         document.getElementById('profile-email-input').value = user.email;
 
-        const { data } = await supabaseClient
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-
+        const { data } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
         if (data) {
             document.getElementById('profile-name').value = data.full_name || '';
             if (data.avatar_url) avatarPreview.src = data.avatar_url; 
@@ -207,16 +197,13 @@ if (window.location.pathname.includes('profile.html')) {
                 const { data: publicUrlData } = supabaseClient.storage.from('avatars').getPublicUrl(fileName);
                 avatarUrl = publicUrlData.publicUrl;
             }
-
             const { error } = await supabaseClient.from('profiles').upsert({
                 id: user.id, full_name: name, avatar_url: avatarUrl, updated_at: new Date()
             });
-
             if (error) throw error;
             profileMsg.textContent = "Profile updated successfully!";
             profileMsg.style.color = "var(--success)";
             loadUserProfileDisplay();
-
         } catch (error) {
             console.error(error);
             profileMsg.textContent = "Error: " + error.message;
@@ -226,7 +213,7 @@ if (window.location.pathname.includes('profile.html')) {
 }
 
 /* =========================================
-   4. ANALYTICS HISTORY LOGIC (POPUP VER.)
+   4. ANALYTICS HISTORY LOGIC
    ========================================= */
 const btnLoadHistory = document.getElementById('btn-load-history');
 const popupOverlay = document.getElementById('no-data-popup');
@@ -273,19 +260,15 @@ if (btnLoadHistory) {
             alert("Error loading data.");
             return;
         }
-
-        // --- POPUP LOGIC ---
         if (data.length === 0) {
             if (popupOverlay) {
                 if (popupDateSpan) popupDateSpan.textContent = dateVal;
-                popupOverlay.classList.add('active'); // SHOW POPUP
+                popupOverlay.classList.add('active'); 
             } else {
                 alert("No data found for this date.");
             }
             return;
         }
-
-        // Success - Update Chart
         document.querySelector('.chart-panel h3').textContent = `History: ${dateVal}`;
         updateChartWithHistory(data);
     });
@@ -301,7 +284,7 @@ function updateChartWithHistory(data) {
 }
 
 /* =========================================
-   5. SYSTEM CORE
+   5. SYSTEM CORE (RULE-BASED LOGIC RESTORED)
    ========================================= */
 function updateSystemStatusUI(isOnline, reading) {
     const sbEl = document.querySelector('.status-indicator');
@@ -322,7 +305,6 @@ function updateSystemStatusUI(isOnline, reading) {
         list.innerHTML = `<li><div class="status-icon-circle" style="color:#C53030"><i class="fa-solid fa-power-off"></i></div><span>Connection Lost</span></li>`;
         return; 
     }
-
     if (isOnline && !reading) {
         card.className = "status-card warning";
         title.innerText = "Status: Calibrating...";
@@ -382,26 +364,31 @@ function updateDashboardWidgets(reading) {
     if (liquid) liquid.style.top = (100 - reading.water_level - 20) + '%';
 }
 
+// --- RESTORED RULE-BASED RECOMMENDATIONS (NO AI) ---
 function generateAIRecommendations(reading) {
     const list = document.getElementById('rec-list');
     const card = document.getElementById('recommendation-card');
     if (!list || !card) return;
+
     list.innerHTML = "";
     let issues = [];
+
+    // Simple If-Else Logic
     if (reading.tilapia_temp < 20) issues.push({ msg: "Water temp low. Check heater.", type: "warning" });
     if (reading.tilapia_temp > 33) issues.push({ msg: "Water temp high! Cool down tank.", type: "danger" });
     if (reading.tilapia_ph < 6.0) issues.push({ msg: "pH Acidic. Add buffer.", type: "warning" });
     if (reading.tilapia_ph > 8.5) issues.push({ msg: "pH Alkaline. Lower pH.", type: "warning" });
     if (reading.water_level < 40) issues.push({ msg: "Low water level! Refill needed.", type: "danger" });
 
+    // Update UI based on logic
     if (issues.length === 0) {
         card.className = "recommendation-card optimal";
-        list.innerHTML = `<li><i class="fa-solid fa-check-circle" style="color: #48BB78;"></i> <span>System optimal. No actions needed.</span></li>`;
+        list.innerHTML = `<li><i class="fa-solid fa-check-circle" style="color: var(--success);"></i> <span>System optimal. No actions needed.</span></li>`;
     } else {
         const isDanger = issues.some(i => i.type === "danger");
         card.className = isDanger ? "recommendation-card danger" : "recommendation-card warning";
         issues.forEach(i => {
-            const color = i.type === "danger" ? "#F56565" : "#ECC94B";
+            const color = i.type === "danger" ? "var(--danger)" : "var(--warning)";
             const icon = i.type === "danger" ? "fa-circle-exclamation" : "fa-triangle-exclamation";
             list.innerHTML += `<li style="margin-bottom:8px;"><i class="fa-solid ${icon}" style="color:${color}"></i> <span>${i.msg}</span></li>`;
         });
@@ -479,11 +466,9 @@ const currentPage = window.location.pathname;
 const isDashboard = ['overview', 'analytics', 'notification', 'profile'].some(p => currentPage.includes(p));
 
 if (isDashboard) {
-    function createBubbles() { /* (Keep bubble logic if needed, omitted for brevity but standard) */ }
-    if (currentPage.includes('profile.html')) { /* Bubbles */ }
-
     updateSystemStatusUI(false, null);
     
+    // FETCH LATEST DATA
     supabaseClient.from('readings').select('*').order('created_at', { ascending: false }).limit(1).then(({ data }) => {
         if (data && data.length > 0) {
             const reading = data[0];
@@ -508,7 +493,7 @@ if (isDashboard) {
                 setText('tds-value', reading.tds_value);
             } else {
                 updateDashboardWidgets(reading);
-                generateAIRecommendations(reading);
+                generateAIRecommendations(reading); // Call the Rule-Based function
             }
         }
     });
@@ -516,10 +501,11 @@ if (isDashboard) {
     if (currentPage.includes('analytics')) initChart();
     if (currentPage.includes('notification')) loadLogs();
 
+    // REALTIME SUBSCRIPTION
     supabaseClient.channel('aquaminds-live')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'readings' }, payload => {
             updateDashboardWidgets(payload.new);
-            generateAIRecommendations(payload.new);
+            generateAIRecommendations(payload.new); 
             if (currentPage.includes('analytics')) updateChartRealtime(payload.new);
             if (currentPage.includes('notification')) loadLogs();
         })

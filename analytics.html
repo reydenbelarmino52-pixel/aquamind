@@ -22,6 +22,12 @@
                     <li class="active"><a href="analytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a></li>
                     <li><a href="notification.html"><i class="fa-regular fa-bell"></i> Notification</a></li>
                     <li><a href="profile.html"><i class="fa-solid fa-user"></i> Profile</a></li>
+
+                    <li class="logout-item">
+                        <a href="#" id="logout-btn">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </a>
+                    </li>
                 </ul>
             </nav>
             <div class="status-indicator">
@@ -113,8 +119,13 @@
                 </div>
                 <div style="flex: 1.5; min-width: 300px;">
                     <div id="recommendation-card" class="recommendation-card optimal">
-                        <div class="rec-header"><i class="fa-solid fa-robot"></i><h4>AI Recommendations</h4></div>
-                        <ul class="rec-list" id="rec-list"><li><i class="fa-solid fa-spinner fa-spin"></i> <span>Analyzing system data...</span></li></ul>
+                        <div class="rec-header">
+                            <i class="fa-solid fa-clipboard-check"></i>
+                            <h4>System Recommendations</h4>
+                        </div>
+                        <ul class="rec-list" id="rec-list">
+                            <li><i class="fa-solid fa-spinner fa-spin"></i> <span>Analyzing system data...</span></li>
+                        </ul>
                     </div>
                 </div>
             </section>
