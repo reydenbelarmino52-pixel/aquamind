@@ -1,4 +1,4 @@
-// AquaMinds - script.js
+// AquaMinds - script.js (FIXED: Auto-Update & Auth)
 const SUPABASE_URL = "https://lskiuxhcyrhsijrnznnj.supabase.co"; 
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxza2l1eGhjeXJoc2lqcm56bm5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNTk4NTksImV4cCI6MjA4NDczNTg1OX0.R_jSTUfLXlXRNTtohKCYe4LT2iCMCWxYDCJjWmP60WE";
 
@@ -6,6 +6,7 @@ if (typeof supabase === 'undefined') console.error("Supabase not loaded");
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let combinedChart = null; 
+let lastReadingTime = null; // Pang-check para hindi mag-duplicate ang chart
 
 // --- 1. AUTH & INIT ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -14,33 +15,45 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSidebar();
     
     const path = window.location.pathname;
+    
     // Initialize Dashboard Logic
     if(path.includes('analytics.html') || path.includes('overview.html')) {
         initAnalyticsCharts();
         subscribeRealtime();
         fetchLatest();
+
+        // [THE FIX] AUTO-REFRESH BACKUP:
+        // Kukunin ang data every 3 seconds kahit fail ang Realtime
+        setInterval(fetchLatest, 3000); 
     }
+    
     // Auth Page Logic
     if(path.includes('index.html') || path === '/' || path.endsWith('/')) {
         setupAuthForm();
     }
 });
 
+// Auth Logic (Updated with Error Handling)
 async function checkAuth() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
+    const { data, error } = await supabaseClient.auth.getSession();
+    
+    if (error) {
+        console.error("Session Error:", error.message);
+        await supabaseClient.auth.signOut();
+        window.location.href = 'index.html';
+        return;
+    }
+
+    const session = data.session;
     const path = window.location.pathname;
     const isAuthPage = path.includes('index.html') || path === '/' || path.endsWith('/');
 
-    // Redirect to login if no session and not on auth page
     if (!session && !isAuthPage) {
         window.location.href = 'index.html';
-    } 
-    // Redirect to overview if session exists and user is on auth page
-    else if (session && isAuthPage) {
+    } else if (session && isAuthPage) {
         window.location.href = 'overview.html';
     }
 
-    // Load User Name
     if(session && document.getElementById('user-display-name')) {
         const { data } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
         const name = data ? (data.full_name || 'User') : 'User';
@@ -48,12 +61,11 @@ async function checkAuth() {
     }
 }
 
-// --- 2. LOGIN & SIGNUP LOGIC (UPDATED) ---
+// --- 2. LOGIN & SIGNUP LOGIC ---
 function setupAuthForm() {
     const form = document.getElementById('auth-form');
     if(!form) return;
     
-    // Elements
     const email = document.getElementById('email');
     const pass = document.getElementById('password');
     const nameContainer = document.getElementById('name-field-container');
@@ -63,92 +75,70 @@ function setupAuthForm() {
     const toggleAuth = document.getElementById('toggle-auth');
     const formTitle = document.getElementById('auth-title');
 
-    let isSignUp = false; // State to track mode
+    let isSignUp = false;
 
-    // Toggle Login <-> Sign Up
     if (toggleAuth) {
         toggleAuth.addEventListener('click', () => {
             isSignUp = !isSignUp;
-            
             if (isSignUp) {
-                // Switch to Sign Up Mode
                 nameContainer.style.display = 'block';
                 formTitle.textContent = "Create Account";
                 btn.textContent = "Sign Up";
                 toggleAuth.innerHTML = 'Already have an account? <span style="color: var(--water-blue); font-weight: 600;">Login</span>';
                 nameInput.required = true;
             } else {
-                // Switch back to Login Mode
                 nameContainer.style.display = 'none';
                 formTitle.textContent = "Welcome Back";
                 btn.textContent = "Login";
                 toggleAuth.innerHTML = 'Don\'t have an account? <span style="color: var(--water-blue); font-weight: 600;">Sign Up</span>';
                 nameInput.required = false;
             }
-            msg.textContent = ""; // Clear errors
+            msg.textContent = "";
         });
     }
 
-    // Handle Submit
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         btn.textContent = "Loading..."; btn.disabled = true; msg.textContent = "";
-
         let result;
 
         if (isSignUp) {
-            // SIGN UP
             result = await supabaseClient.auth.signUp({
-                email: email.value,
-                password: pass.value,
-                options: {
-                    data: { full_name: nameInput.value }
-                }
+                email: email.value, password: pass.value,
+                options: { data: { full_name: nameInput.value } }
             });
-            
             if (!result.error && result.data.user) {
-                // Optional: Insert to profiles manually if trigger fails
                 await supabaseClient.from('profiles').upsert([
                     { id: result.data.user.id, full_name: nameInput.value, updated_at: new Date() }
                 ]);
-                msg.textContent = "Account created! Please check your email.";
+                msg.textContent = "Account created! Check email.";
                 msg.style.color = "var(--success)";
                 btn.textContent = "Sign Up"; btn.disabled = false;
-                return; // Stop here for sign up
+                return;
             }
-
         } else {
-            // LOGIN
-            result = await supabaseClient.auth.signInWithPassword({
-                email: email.value, password: pass.value
-            });
+            result = await supabaseClient.auth.signInWithPassword({ email: email.value, password: pass.value });
         }
 
-        // Handle Errors or Success
         if (result.error) {
-            msg.textContent = result.error.message; 
-            msg.style.color = "var(--danger)";
-            btn.textContent = isSignUp ? "Sign Up" : "Login";
-            btn.disabled = false;
+            msg.textContent = result.error.message; msg.style.color = "var(--danger)";
+            btn.textContent = isSignUp ? "Sign Up" : "Login"; btn.disabled = false;
         } else if (!isSignUp) {
-            // Login Success
             window.location.href = "overview.html";
         }
     });
 
-    // Toggle Password Visibility
     const togglePassBtn = document.getElementById('toggle-password');
     if(togglePassBtn) {
         togglePassBtn.addEventListener('click', () => {
             const type = pass.getAttribute('type') === 'password' ? 'text' : 'password';
             pass.setAttribute('type', type);
-            togglePassBtn.classList.toggle('fa-eye');
-            togglePassBtn.classList.toggle('fa-eye-slash');
+            togglePassBtn.classList.toggle('fa-eye'); togglePassBtn.classList.toggle('fa-eye-slash');
         });
     }
 }
 
-// --- 3. UI & SIDEBAR ---
+// --- 3. UI FUNCTIONS ---
 function setupSidebar() {
     const menuBtn = document.getElementById('menu-toggle');
     const sidebar = document.getElementById('sidebar');
@@ -157,24 +147,18 @@ function setupSidebar() {
 
     if (menuBtn && sidebar) {
         menuBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            sidebar.classList.toggle('active');
+            e.stopPropagation(); sidebar.classList.toggle('active');
             if(overlay) overlay.classList.toggle('active');
         });
     }
-
     if (overlay) {
         overlay.addEventListener('click', () => {
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
+            sidebar.classList.remove('active'); overlay.classList.remove('active');
         });
     }
-
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await supabaseClient.auth.signOut();
-            window.location.href = 'index.html';
+            e.preventDefault(); await supabaseClient.auth.signOut(); window.location.href = 'index.html';
         });
     }
 }
@@ -182,29 +166,26 @@ function setupSidebar() {
 function initTheme() {
     const btn = document.getElementById('theme-toggle');
     if(!btn) return;
-    
     if(localStorage.getItem('theme') === 'dark') {
         document.body.setAttribute('data-theme', 'dark');
         btn.innerHTML = '<i class="fa-solid fa-sun"></i>';
     }
-
     btn.addEventListener('click', () => {
         const isDark = document.body.getAttribute('data-theme') === 'dark';
         if(isDark) {
-            document.body.removeAttribute('data-theme');
-            localStorage.setItem('theme', 'light');
+            document.body.removeAttribute('data-theme'); localStorage.setItem('theme', 'light');
             btn.innerHTML = '<i class="fa-solid fa-moon"></i>';
         } else {
-            document.body.setAttribute('data-theme', 'dark');
-            localStorage.setItem('theme', 'dark');
+            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark');
             btn.innerHTML = '<i class="fa-solid fa-sun"></i>';
         }
     });
 }
 
-// --- 4. DASHBOARD LOGIC ---
+// --- 4. DASHBOARD UPDATE (With Duplicate Prevention) ---
 function updateDashboardWidgets(reading) {
     if (!reading) return;
+    
     const setText = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
 
     setText('an-tilapia-ph', reading.tilapia_ph);
@@ -223,22 +204,15 @@ function updateDashboardWidgets(reading) {
     setText('ov-ec', reading.ec_value + " µS");
     setText('ov-water', reading.water_level + "%");
 
-    let statusMsg = "Optimal";
-    let statusColor = "#05CD99"; // Green
-    
-    if(reading.tilapia_temp > 35 || reading.water_level < 40) {
-        statusMsg = "Warning"; statusColor = "#FFB547";
-    }
-    if(reading.water_level < 20) {
-        statusMsg = "Critical"; statusColor = "#EE5D50";
-    }
+    let statusMsg = "Optimal"; let statusColor = "#05CD99"; 
+    if(reading.tilapia_temp > 35 || reading.water_level < 40) { statusMsg = "Warning"; statusColor = "#FFB547"; }
+    if(reading.water_level < 20) { statusMsg = "Critical"; statusColor = "#EE5D50"; }
 
     const stText = document.getElementById('an-status-text');
     if(stText) { stText.textContent = statusMsg; stText.style.color = statusColor; }
     
     const miniCard = document.getElementById('mini-status-card');
     if(miniCard) miniCard.style.borderLeftColor = statusColor;
-
     const ovCard = document.getElementById('overview-status-card');
     if(ovCard) ovCard.style.borderLeft = `5px solid ${statusColor}`;
 
@@ -248,9 +222,11 @@ function updateDashboardWidgets(reading) {
         waterFill.style.height = level + "%";
     }
 
-    if (combinedChart) {
+    // UPDATE CHART (Only if new data comes in)
+    if (combinedChart && reading.created_at !== lastReadingTime) {
         const time = new Date(reading.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         addDataToChart(combinedChart, time, reading);
+        lastReadingTime = reading.created_at; // Update tracker
     }
 }
 
@@ -260,7 +236,13 @@ async function fetchLatest() {
 }
 
 function subscribeRealtime() {
-    supabaseClient.channel('live').on('postgres_changes', {event:'INSERT', schema:'public', table:'readings'}, p => updateDashboardWidgets(p.new)).subscribe();
+    // Tinitignan ang INSERT events para sa mabilis na update
+    supabaseClient.channel('live')
+        .on('postgres_changes', {event:'INSERT', schema:'public', table:'readings'}, p => {
+            console.log("Realtime Update:", p.new);
+            updateDashboardWidgets(p.new);
+        })
+        .subscribe();
 }
 
 // --- 5. CHARTS ---
@@ -272,6 +254,9 @@ async function initAnalyticsCharts() {
     if (!data) return;
     
     const reversed = data.reverse();
+    // I-set ang lastReadingTime para sa duplicate check
+    if(reversed.length > 0) lastReadingTime = reversed[reversed.length - 1].created_at;
+
     const labels = reversed.map(d => new Date(d.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
 
     combinedChart = new Chart(ctx, {
