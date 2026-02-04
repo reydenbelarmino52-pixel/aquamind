@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AquaMinds - Overview</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div id="overlay" class="overlay"></div>
 
     <div class="dashboard-container">
+        
         <aside class="sidebar" id="sidebar">
             <div class="logo">
                 <img src="logo.png" alt="Logo">
@@ -22,107 +23,85 @@
             <nav>
                 <ul>
                     <li class="active"><a href="overview.html"><i class="fa-solid fa-house"></i> Overview</a></li>
-                    <li><a href="analytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a></li>
+                    <li><a href="analytics.html"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
                     <li><a href="notification.html"><i class="fa-regular fa-bell"></i> Notification</a></li>
                     <li><a href="profile.html"><i class="fa-solid fa-user"></i> Profile</a></li>
-
                     <li class="logout-item">
-                        <a href="#" id="logout-btn">
-                            <i class="fa-solid fa-right-from-bracket"></i> Logout
-                        </a>
+                        <a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
                     </li>
                 </ul>
             </nav>
-            <div class="status-indicator">
-                <span class="status-online"></span> System Online
-            </div>
         </aside>
 
         <main class="main-content">
             <header>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <button id="menu-toggle" class="menu-btn"><i class="fa-solid fa-bars"></i></button>
+                <div style="display: flex; align-items: center;">
+                    <button id="menu-toggle" class="icon-btn menu-btn"><i class="fa-solid fa-bars"></i></button>
                     <div class="header-title">
-                        <h1>Overview</h1>
-                        <p id="current-date">Loading date...</p>
+                        <h1>System Overview</h1>
+                        <p id="current-date">Live Monitoring</p>
                     </div>
                 </div>
-                
                 <div class="header-actions">
-                    <button id="theme-toggle" class="icon-btn" title="Toggle Dark Mode">
-                        <i class="fa-solid fa-moon"></i>
-                    </button>
+                    <button id="theme-toggle" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
                     <div class="user-profile">
-                        <i class="fa-solid fa-circle-user"></i>
+                        <div class="user-avatar"><i class="fa-solid fa-user"></i></div>
                         <span id="user-display-name">User</span>
                     </div>
                 </div>
             </header>
 
-            <div class="overview-top-row">
-                <div class="summary-card glass-panel">
-                    <div class="card-header"><i class="fa-solid fa-fish"></i> Tilapia</div>
-                    <div class="mini-metrics">
-                        <div><span>pH Level</span><h3 id="ov-tilapia-ph">--</h3></div>
-                        <div><span>Temp°C</span><h3 id="ov-tilapia-temp">--</h3></div>
+            <section class="metrics-grid" style="margin-bottom: 25px;">
+                <div class="metric-card">
+                    <div class="metric-row"><h3><i class="fa-solid fa-fish" style="color: #4299E1;"></i> TILAPIA TANK</h3></div>
+                    <div class="metric-row"><span>Temp</span><h3 id="ov-tilapia-temp">--°C</h3></div>
+                    <div class="metric-row"><span>pH</span><h3 id="ov-tilapia-ph">--</h3></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-row"><h3><i class="fa-solid fa-filter" style="color: #05CD99;"></i> BIOFILTER</h3></div>
+                    <div class="metric-row"><span>Temp</span><h3 id="ov-bio-temp">--°C</h3></div>
+                    <div class="metric-row"><span>pH</span><h3 id="ov-bio-ph">--</h3></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-row"><h3><i class="fa-solid fa-water" style="color: #4299E1;"></i> WATER LEVEL</h3></div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <h3 id="ov-water" style="font-size: 2rem;">--%</h3>
                     </div>
                 </div>
-
-                <div class="summary-card glass-panel">
-                    <div class="card-header"><i class="fa-solid fa-filter"></i> Biofilter</div>
-                    <div class="mini-metrics">
-                        <div><span>pH Level</span><h3 id="ov-bio-ph">--</h3></div>
-                        <div><span>Temp°C</span><h3 id="ov-bio-temp">--</h3></div>
+                <div id="overview-status-card" class="metric-card status-good">
+                    <div class="metric-row"><h3><i class="fa-solid fa-heart-pulse"></i> STATUS</h3></div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <h3 id="an-status-text" style="color: var(--success);">Optimal</h3>
                     </div>
                 </div>
+            </section>
 
-                <div class="summary-pill glass-panel">
-                    <i class="fa-solid fa-water"></i>
-                    <div><span>Level</span><h3 id="ov-water">--%</h3></div>
+            <section style="display: flex; gap: 20px; flex-wrap: wrap;">
+                
+                <div class="panel" style="flex: 1; min-width: 300px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <h3><i class="fa-solid fa-seedling" style="color: var(--success);"></i> Growth</h3>
+                    <div style="width: 100px; height: 100px; background: rgba(5, 205, 153, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 20px 0;">
+                        <i class="fa-solid fa-plant-wilt" style="font-size: 2.5rem; color: var(--success);"></i>
+                    </div>
+                    <h2 style="color: var(--text-primary);">Week 1</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Veggie Stage</p>
                 </div>
-                <div class="summary-pill glass-panel">
-                    <i class="fa-solid fa-glass-water"></i>
-                    <div><span>TDS</span><h3 id="ov-tds">-- ppm</h3></div>
-                </div>
-                <div class="summary-pill glass-panel">
-                    <i class="fa-solid fa-bolt"></i>
-                    <div><span>EC</span><h3 id="ov-ec">-- µS</h3></div>
-                </div>
-            </div>
 
-            <div class="overview-main-split">
-                <div class="growth-card">
-                    <h3>Estimate Growth Rate</h3>
-                    <div class="growth-visual">
-                        <div class="plant-stage">
-                            <i class="fa-solid fa-seedling" id="growth-icon"></i>
+                <div class="panel" style="flex: 1; min-width: 300px;">
+                    <h3><i class="fa-solid fa-glass-water" style="color: var(--warning);"></i> Water Details</h3>
+                    <div style="margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--border-color);">
+                            <span style="color: var(--text-secondary);">TDS</span>
+                            <span style="font-weight: 700; color: var(--text-primary);" id="ov-tds">-- ppm</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--border-color);">
+                            <span style="color: var(--text-secondary);">EC</span>
+                            <span style="font-weight: 700; color: var(--text-primary);" id="ov-ec">-- µS</span>
                         </div>
                     </div>
-                    <div class="growth-timeline">
-                        <span id="growth-week">Week 1</span>
-                        <div class="progress-bar"><div class="fill" id="growth-fill" style="width: 25%"></div></div>
-                    </div>
                 </div>
 
-                <div id="overview-status-card" class="status-card optimal">
-                    <h4 id="status-card-title" class="status-header">Status: All Systems Optimal</h4>
-                    <ul class="status-list" id="status-list">
-                        <li>
-                            <div class="status-icon-circle"><i class="fa-solid fa-fish"></i></div>
-                            <span>Optimal Growth</span>
-                        </li>
-                        <li>
-                            <div class="status-icon-circle"><i class="fa-solid fa-filter"></i></div>
-                            <span>Biofilter Active</span>
-                        </li>
-                        <li>
-                            <div class="status-icon-circle"><i class="fa-solid fa-flask"></i></div>
-                            <span>Nutrient Levels Stable</span>
-                        </li>
-                    </ul>
-                    <button class="view-all-btn">View All</button>
-                </div>
-            </div>
+            </section>
         </main>
     </div>
     <script src="script.js"></script>

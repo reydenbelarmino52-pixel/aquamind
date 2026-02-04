@@ -12,39 +12,33 @@
 <body>
     <div class="auth-container">
         <div class="auth-card">
-            <img src="logo.png" alt="AquaMinds Logo" class="auth-logo">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="logo.png" alt="Logo" style="width: 60px; height: 60px;">
+            </div>
             
-            <h2 style="color: var(--sidebar-bg); margin-bottom: 20px;">AquaMinds</h2>
-            <h3 id="auth-title">Welcome Back</h3>
-            <p id="auth-subtitle" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">Monitor your aquaponics system</p>
+            <h2 style="color: var(--text-primary); margin-bottom: 5px;">AquaMinds</h2>
+            <h3 id="auth-title" style="margin-bottom: 5px;">Welcome Back</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 25px;">Monitor your aquaponics system</p>
             
             <form id="auth-form">
                 <div id="name-field-container" style="display: none; margin-bottom: 15px;">
-                    <input type="text" id="full-name" class="auth-input" placeholder="Full Name">
+                    <input type="text" id="full-name" class="auth-input" placeholder="Full Name" style="margin-bottom: 0;">
                 </div>
+
+                <input type="email" id="email" class="auth-input" placeholder="Email Address" required>
                 
-                <div style="margin-bottom: 15px;">
-                    <input type="email" id="email" class="auth-input" placeholder="Email Address" required style="margin-bottom: 0;">
-                </div>
-
-                <div class="password-wrapper" style="margin-bottom: 15px;">
-                    <input type="password" id="password" class="auth-input" placeholder="Password" required style="margin-bottom: 0; padding-right: 40px;">
+                <div class="password-wrapper">
+                    <input type="password" id="password" class="auth-input" placeholder="Password" required>
                     <i class="fa-solid fa-eye" id="toggle-password"></i>
-                </div>
-
-                <div id="password-strength-container" style="display: none; text-align: left; margin-bottom: 15px;">
-                    <div id="password-strength-text" style="font-size: 0.8rem; font-weight: 500;"></div>
-                    <div class="strength-bar-bg">
-                        <div id="strength-bar-fill"></div>
-                    </div>
                 </div>
 
                 <button type="submit" class="auth-btn" id="submit-btn">Login</button>
             </form>
             
-            <div class="auth-switch" id="toggle-auth">
-                Don't have an account? <span>Sign Up</span>
+            <div class="auth-switch" id="toggle-auth" style="margin-top: 20px; font-size: 0.9rem; cursor: pointer; color: var(--text-secondary);">
+                Don't have an account? <span style="color: var(--water-blue); font-weight: 600;">Sign Up</span>
             </div>
+
             <div id="auth-message" style="margin-top: 15px; font-size: 0.85rem; min-height: 1.2em;"></div>
         </div>
     </div>

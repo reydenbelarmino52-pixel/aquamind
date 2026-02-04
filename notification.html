@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AquaMinds - Notifications</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -22,37 +21,27 @@
             <nav>
                 <ul>
                     <li><a href="overview.html"><i class="fa-solid fa-house"></i> Overview</a></li>
-                    <li><a href="analytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a></li>
+                    <li><a href="analytics.html"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
                     <li class="active"><a href="notification.html"><i class="fa-regular fa-bell"></i> Notification</a></li>
                     <li><a href="profile.html"><i class="fa-solid fa-user"></i> Profile</a></li>
-
                     <li class="logout-item">
-                        <a href="#" id="logout-btn">
-                            <i class="fa-solid fa-right-from-bracket"></i> Logout
-                        </a>
+                        <a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
                     </li>
                 </ul>
             </nav>
-            <div class="status-indicator">
-                <span class="status-online"></span> System Online
-            </div>
         </aside>
 
         <main class="main-content">
             <header>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <button id="menu-toggle" class="menu-btn"><i class="fa-solid fa-bars"></i></button>
+                <div style="display: flex; align-items: center;">
+                    <button id="menu-toggle" class="icon-btn menu-btn"><i class="fa-solid fa-bars"></i></button>
                     <div class="header-title">
                         <h1>Notifications</h1>
-                        <p id="current-date">Loading date...</p>
+                        <p>System Alerts</p>
                     </div>
                 </div>
-                
-                <div class="header-actions" style="display: flex; gap: 15px; align-items: center;">
-                    <button id="theme-toggle" class="icon-btn" title="Toggle Dark Mode">
-                        <i class="fa-solid fa-moon"></i>
-                    </button>
-
+                <div class="header-actions">
+                    <button id="theme-toggle" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
                     <div class="user-profile">
                         <i class="fa-solid fa-circle-user"></i>
                         <span>Admin</span>
@@ -60,16 +49,13 @@
                 </div>
             </header>
 
-            <section class="panel logs-panel" style="width: 100%; min-height: 500px;">
-                <div class="panel-header">
-                    <h3>Sensor Activity & System Alerts</h3>
-                    <div style="display: flex; gap: 10px;">
-                        <button id="clear-logs-btn" class="action-btn secondary" style="font-size: 0.8rem;">Clear All</button>
-                        <button class="action-btn" style="padding: 5px 10px;"><i class="fa-solid fa-download"></i></button>
-                    </div>
+            <section class="panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Sensor Logs</h3>
+                    <button id="clear-logs-btn" class="action-btn secondary" style="font-size: 0.8rem; padding: 5px 10px;">Clear</button>
                 </div>
-                <div style="overflow-x: auto; margin-top: 15px;">
-                    <table style="width: 100%;">
+                <div class="report-table-container">
+                    <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Time</th>
@@ -83,7 +69,6 @@
                     </table>
                 </div>
             </section>
-
         </main>
     </div>
     <script src="script.js"></script>
