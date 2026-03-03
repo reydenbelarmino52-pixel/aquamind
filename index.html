@@ -3,44 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaMinds - Access</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>AquaMinds - Smart Aquaponics Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
-    <div class="auth-container">
+    <div id="global-loader" class="global-loader"><div class="spinner"></div><p>Initializing AquaMinds...</p></div>
+
+    <div id="auth-view" class="auth-container" style="display: none;">
         <div class="auth-card">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <img src="logo.png" alt="Logo" style="width: 60px; height: 60px;">
-            </div>
-            
-            <h2 style="color: var(--text-primary); margin-bottom: 5px;">AquaMinds</h2>
-            <h3 id="auth-title" style="margin-bottom: 5px;">Welcome Back</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 25px;">Monitor your aquaponics system</p>
-            
+            <div class="auth-logo-box"><img src="logo.png" alt="Logo"></div>
+            <h2>AquaMinds</h2><h3 id="auth-title">Welcome Back</h3>
             <form id="auth-form">
-                <div id="name-field-container" style="display: none; margin-bottom: 15px;">
-                    <input type="text" id="full-name" class="auth-input" placeholder="Full Name" style="margin-bottom: 0;">
+                <div id="name-field-container" class="input-wrapper" style="display: none;">
+                    <i class="fa-regular fa-user"></i><input type="text" id="full-name" class="auth-input" placeholder="Full Name">
                 </div>
-
-                <input type="email" id="email" class="auth-input" placeholder="Email Address" required>
-                
-                <div class="password-wrapper">
-                    <input type="password" id="password" class="auth-input" placeholder="Password" required>
-                    <i class="fa-solid fa-eye" id="toggle-password"></i>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-envelope"></i><input type="email" id="email" class="auth-input" placeholder="Email Address" required>
                 </div>
-
+                <div class="input-wrapper password-wrapper">
+                    <i class="fa-solid fa-lock"></i><input type="password" id="password" class="auth-input" placeholder="Password" required>
+                    <i class="fa-solid fa-eye toggle-pw" id="toggle-password"></i>
+                </div>
                 <button type="submit" class="auth-btn" id="submit-btn">Login</button>
             </form>
-            
-            <div class="auth-switch" id="toggle-auth" style="margin-top: 20px; font-size: 0.9rem; cursor: pointer; color: var(--text-secondary);">
-                Don't have an account? <span style="color: var(--water-blue); font-weight: 600;">Sign Up</span>
-            </div>
-
-            <div id="auth-message" style="margin-top: 15px; font-size: 0.85rem; min-height: 1.2em;"></div>
+            <div class="auth-switch" id="toggle-auth">Don't have an account? <span>Sign Up</span></div>
+            <div id="auth-message" class="auth-message"></div>
         </div>
+    </div>
+
+    <div id="app-view" class="dashboard-container" style="display: none;">
+        <div id="overlay" class="overlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="logo"><img src="logo.png" alt="Logo"><h2>AquaMinds</h2></div>
+            <nav>
+                <ul id="nav-menu">
+                    <li class="active"><a href="#" data-target="view-overview"><i class="fa-solid fa-house"></i> Overview</a></li>
+                    <li><a href="#" data-target="view-analytics"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+                    <li><a href="#" data-target="view-notifications"><i class="fa-regular fa-bell"></i> Alerts</a></li>
+                    <li><a href="#" data-target="view-users"><i class="fa-solid fa-users-gear"></i> Users & Logs</a></li>
+                    <li><a href="#" data-target="view-chat"><i class="fa-solid fa-comments"></i> Support Chat</a></li>
+                    <li><a href="#" data-target="view-profile"><i class="fa-solid fa-user"></i> Profile</a></li>
+                    <li class="logout-item"><a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <div class="header-left">
+                    <button id="menu-toggle" class="icon-btn menu-btn"><i class="fa-solid fa-bars"></i></button>
+                    <div class="header-title"><h1 id="page-title">Overview</h1><p id="page-subtitle">System at a glance</p></div>
+                </div>
+                <div class="header-actions">
+                    <div class="connection-status" id="connection-status"><span class="pulse-dot"></span> Live</div>
+                    <button id="theme-toggle" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
+                    <div class="user-profile" id="btn-profile-shortcut"><div class="user-avatar"><i class="fa-solid fa-user"></i></div><span id="user-display-name">Admin</span></div>
+                </div>
+            </header>
+
+            <section id="view-overview" class="view-section active">
+                <div class="overview-special-bg">
+                    <div class="mockup-metrics-row">
+                        <div class="mockup-pill glass-card">
+                            <div class="pill-header"><i class="fa-solid fa-fish text-blue"></i> Tilapia</div>
+                            <div class="pill-body">
+                                <div><span class="pill-label">pH</span><h3 class="pill-value"><span id="ov-tilapia-ph">--</span></h3></div>
+                                <div><span class="pill-label">Temp°C</span><h3 class="pill-value"><span id="ov-tilapia-temp">--</span></h3></div>
+                            </div>
+                        </div>
+                        <div class="mockup-pill glass-card">
+                            <div class="pill-header"><i class="fa-solid fa-filter text-blue"></i> Biofilter</div>
+                            <div class="pill-body">
+                                <div><span class="pill-label">pH</span><h3 class="pill-value"><span id="ov-bio-ph">--</span></h3></div>
+                                <div><span class="pill-label">Temp°C</span><h3 class="pill-value"><span id="ov-bio-temp">--</span></h3></div>
+                            </div>
+                        </div>
+                        <div class="mockup-pill-stacked glass-card">
+                            <div class="stacked-row"><span class="pill-label"><i class="fa-solid fa-droplet text-blue"></i> Water Level</span><span class="pill-value" id="ov-water">--%</span></div>
+                            <div class="stacked-divider"></div>
+                            <div class="stacked-row"><span class="pill-label"><i class="fa-solid fa-flask text-muted"></i> TDS</span><span class="pill-value"><span id="ov-tds">--</span> <small class="text-xs">ppm</small></span></div>
+                        </div>
+                        <div class="mockup-pill mini glass-card"><span class="pill-label">EC</span><span class="pill-value" id="ov-ec" style="margin-top: 10px;">--</span></div>
+                    </div>
+                    <div class="mockup-bottom-row">
+                        <div id="dynamic-status-card" class="mockup-status-card status-optimal slide-up">
+                            <h4 id="ds-title">Status: All Systems Optimal</h4>
+                            <ul class="ds-list" id="ds-list">
+                                <li><div class="ds-icon"><i class="fa-solid fa-check"></i></div> <span>System Normal</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-analytics" class="view-section">
+                <div class="panel slide-up">
+                    <h3 class="panel-title"><i class="fa-solid fa-chart-area"></i> System History Chart</h3>
+                    <div class="chart-container"><canvas id="combinedChart"></canvas></div>
+                </div>
+                <div class="panel slide-up delay-1">
+                    <h3 class="panel-title"><i class="fa-solid fa-file-export"></i> Export Data Report</h3>
+                    <div class="export-controls">
+                        <div class="input-group"><label>Start Date:</label><input type="datetime-local" id="start-date" class="date-input"></div>
+                        <div class="input-group"><label>End Date:</label><input type="datetime-local" id="end-date" class="date-input"></div>
+                        <button id="btn-generate-report" class="action-btn"><i class="fa-solid fa-magnifying-glass"></i> Analyze</button>
+                    </div>
+                    <div id="report-preview" class="report-table-container hidden mt-4">
+                        <table class="data-table"><thead><tr><th>Time</th><th>T-Temp</th><th>B-Temp</th><th>Status</th></tr></thead><tbody id="report-body"></tbody></table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-notifications" class="view-section">
+                <div class="panel fade-in">
+                    <div class="flex-between mb-4">
+                        <h3 class="panel-title"><i class="fa-solid fa-triangle-exclamation"></i> Critical Alerts</h3>
+                        <button id="clear-logs-btn" class="action-btn secondary btn-sm"><i class="fa-solid fa-trash"></i> Clear</button>
+                    </div>
+                    <div class="report-table-container">
+                        <table class="data-table"><thead><tr><th>Time</th><th>Event Details</th><th>Status</th></tr></thead><tbody id="logs-body"><tr><td colspan="3" class="text-center text-muted py-4">No recent alerts.</td></tr></tbody></table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-users" class="view-section">
+                <div class="profile-grid fade-in">
+                    <div class="panel" style="display: flex; flex-direction: column;">
+                        <h3 class="panel-title"><i class="fa-solid fa-users"></i> App Users</h3>
+                        <p class="text-muted text-sm mb-4">Grant or Revoke manual pump control for app users.</p>
+                        <div class="report-table-container" style="flex: 1;">
+                            <table class="data-table">
+                                <thead><tr><th>Name</th><th>Role</th><th>Access</th></tr></thead>
+                                <tbody id="users-body"><tr><td colspan="3" class="text-center">Loading users...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="panel" style="display: flex; flex-direction: column;">
+                        <h3 class="panel-title"><i class="fa-solid fa-clock-rotate-left"></i> Real-Time Activity Logs</h3>
+                        <p class="text-muted text-sm mb-4">Monitor actions taken by users inside the Flutter App.</p>
+                        <div class="report-table-container" style="flex: 1; max-height: 500px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead><tr><th>Time</th><th>User</th><th>Action</th></tr></thead>
+                                <tbody id="activity-logs-body"><tr><td colspan="3" class="text-center">Loading logs...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-chat" class="view-section">
+                <div class="panel fade-in" style="height: 80vh; padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+                    <div style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+                        <h3 class="panel-title" style="margin: 0;"><i class="fa-solid fa-comments"></i> Admin Support Chat</h3>
+                        <p class="text-muted text-sm mt-2">Pumili ng user mula sa inbox para mag-reply sa kanilang concerns.</p>
+                    </div>
+                    <div class="chat-layout">
+                        <div class="chat-sidebar">
+                            <div class="sidebar-header"><i class="fa-solid fa-inbox"></i> User Inbox</div>
+                            <div id="chat-user-list" class="user-list"></div>
+                        </div>
+
+                        <div class="chat-main">
+                            <div class="chat-header" id="chat-active-user">
+                                <h4><i class="fa-regular fa-comment-dots"></i> Pumili ng user sa kaliwa para mag-chat</h4>
+                            </div>
+                            <div id="chat-messages" class="chat-messages"></div>
+                            <div class="chat-input-area" id="chat-input-area" style="display: none;">
+                                <input type="text" id="admin-chat-input" class="date-input" placeholder="Type a reply...">
+                                <button id="admin-send-chat" class="action-btn"><i class="fa-solid fa-paper-plane"></i> Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-profile" class="view-section">
+                <div class="panel text-center fade-in">
+                    <h2 id="profile-welcome-name">Welcome!</h2>
+                    <span class="badge" style="background: rgba(5, 205, 153, 0.2); color: #05CD99;">Administrator</span>
+                    <form id="profile-form" class="mt-6 text-left" style="max-width: 400px; margin: 0 auto;">
+                        <div class="input-group mb-4"><label>Full Name</label><input type="text" id="profile-name" class="date-input"></div>
+                        <div class="input-group mb-4"><label>Email Address</label><input type="email" id="profile-email-input" class="date-input disabled" disabled></div>
+                        <button type="submit" class="action-btn w-full justify-center"><i class="fa-solid fa-floppy-disk"></i> Save Profile</button>
+                        <p id="profile-msg" class="text-center mt-2 text-sm"></p>
+                    </form>
+                </div>
+            </section>
+        </main>
     </div>
     <script src="script.js"></script>
 </body>
